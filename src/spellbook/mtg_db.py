@@ -1,8 +1,12 @@
-from mtgtools.MtgDB import MtgDB
 from difflib import SequenceMatcher
-from directories import db_file
+from spellbook.directories import db_file
 import os
 import time
+import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter('ignore', UserWarning)
+    import mtgtools.MtgDB
+    MtgDB = mtgtools.MtgDB.MtgDB
 
 mtg_db = MtgDB(str(db_file))
 
@@ -20,14 +24,14 @@ def get_card(name):
     matches.sort(lambda card: fuzzy_compare(card.name, name))
     if matches:
         if len(matches) > 1:
-            if matches[0].name.lower() == name:
+            if len(set((x.name for x in matches))) == 1:
                 return matches[0]
             else:
                 print(f'Multiple possible matches for "{name}", select one:')
                 for i in range(len(matches)):
                     print(f'  [{i}] {matches[i]}')
                 print(f'  [{len(matches)}] None of the above')
-                selection = -1
+                selection = None
                 while not selection:
                     selection_str = input()
                     if selection_str.isdigit():

@@ -1,0 +1,15 @@
+[build-system]
+requires = ['setuptools']
+build-backend = 'setuptools.build_meta'
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[project]
+name = 'spellbook'
+version = '0.0.1'
+description = 'Command line MTG collection manager.'
+dynamic = ["dependencies"]
+
+[project.scripts]
+spellbook = 'spellbook:main.app'

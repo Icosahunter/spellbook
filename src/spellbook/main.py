@@ -1,17 +1,39 @@
 import typer
-from typing_extensions import Annotated
 from pathlib import Path
-
-from mtg_db import *
-from directories import *
-from card_collection import CardCollection
-from card_list import CardList
+from spellbook.mtg_db import *
+from spellbook.directories import *
+from spellbook.card_collection import CardCollection
+from spellbook.card_list import CardList
 
 app = typer.Typer()
 
 @app.command()
 def update_db():
     mtg_db.scryfall_bulk_update()
+
+@app.command()
+def search(name: str, collection: str='default'):
+    col = CardCollection(collection, collection_dir)
+    print(col.cards.search(name).dumps())
+
+@app.command()
+def log(collection: str='default'):
+    print(collection + ' logs')
+    col = CardCollection(collection, collection_dir)
+    for x in col.history_path.glob('*.txt'):
+        print(x.stem)
+
+@app.command()
+def backups(collection: str='default'):
+    print(collection + ' backups')
+    col = CardCollection(collection, collection_dir)
+    for x in col.backups_path.glob('*.txt'):
+        print(x.stem)
+
+@app.command()
+def restore(backup: str, collection: str='default'):
+    col = CardCollection(collection, collection_dir)
+    col.restore(backup)
 
 @app.command()
 def add(name: str, collection: str='default'):

@@ -1,6 +1,4 @@
-from mtg_db import *
-from tqdm import tqdm
-from collections import Counter
+from spellbook.mtg_db import *
 
 class CardList(list):
 
@@ -9,6 +7,13 @@ class CardList(list):
             self.load(path)
             if cleanup:
                 self.cleanup()
+
+    @staticmethod
+    def from_list(lst):
+        cardlist = CardList()
+        for item in lst:
+            cardlist.append(item)
+        return cardlist
 
     def loads(self, str):
         self.clear()
@@ -88,10 +93,10 @@ class CardList(list):
         self.extend(new_cards)
 
     def search(self, name, set:None|str='*'):
-        results = [x for x in self if x['name'] == name]
+        results = [x for x in self if name.lower() in x['name'].lower()]
         if set != '*':
             results = [x for x in results if x['set'] == set]
-        return results
+        return CardList.from_list(results)
 
     def add(self, name, set:str|None=None, count=1):
         results = self.search(name, set)

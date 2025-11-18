@@ -1,12 +1,13 @@
-from mtg_db import *
-from card_list import CardList
+from spellbook.mtg_db import *
+from spellbook.card_list import CardList
 import shutil
 from datetime import datetime
+from pathlib import Path
 
 class CardCollection:
     def __init__(self, name, dir):
         self.name = name
-        self.dir = dir
+        self.dir = Path(dir)
         self.path = dir / name / 'cards.txt'
         self.history_path = dir / name / 'history'
         self.backups_path = dir / name / 'backups'
@@ -40,7 +41,7 @@ class CardCollection:
             self.log_cards(cardlist, 'removed - ' + comment)
 
     def log_cards(self, cards, comment):
-        timestamp = (datetime.now().strftime('%Y%m%dT%H%M%S.%f')[0:-3])
+        timestamp = (datetime.now().strftime('%Y%m%dT%H%M%S'))
         log_filepath = self.history_path / f'{timestamp} - {comment}.txt'
         if isinstance(cards, CardList):
             cards.dump(log_filepath)
@@ -48,7 +49,21 @@ class CardCollection:
             with open(log_filepath, 'w+') as f:
                 f.write(cards)
 
-    def save(self):
-        backup_filepath = (self.backups_path / (datetime.now().strftime('%Y%m%dT%H%M%S.%f')[0:-3])).with_suffix('.txt')
+    def _backup(self):
+        timestamp = (datetime.now().strftime('%Y%m%dT%H%M%S'))
+        backup_filepath = (self.backups_path / timestamp).with_suffix('.txt')
         shutil.move(self.path, backup_filepath)
+
+    def save(self):
+        self._backup()
         self.cards.dump(self.path)
+
+    def restore(self, backup):
+        backup_path = (self.backups_path / backup).with_suffix('.txt')
+        if backup_path.exists():
+            self._backup()
+            shutil.copy(backup_path, self.path)
+            self.log_cards(self.cards, f'restored - {backup}')
+            self.cards = CardList(self.path)
+        else:
+            print(f'ERROR: No backup found named {backup}')
