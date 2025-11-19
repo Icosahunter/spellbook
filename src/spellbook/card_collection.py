@@ -18,13 +18,13 @@ class CardCollection:
 
         self.cards = CardList(self.path)
 
-    def add_card(self, name, set=None, count=1, log=True, comment=''):
-        self.cards.add(name, set, count)
+    def add_card(self, name, set_code=None, collector_number=None, count=1, log=True, comment=''):
+        self.cards.add(name, set_code, collector_number, count)
         if log:
             self.log_cards(name, 'added - ' + comment)
 
-    def remove_card(self, name, set=None, count=1, log=True, comment=''):
-        self.cards.sub(name, set, count)
+    def remove_card(self, name, set_code=None, collector_number=None, count=1, log=True, comment=''):
+        self.cards.sub(name, set_code, collector_number, count)
         if log:
             self.log_cards(name, 'removed - ' + comment)
 
@@ -36,7 +36,7 @@ class CardCollection:
 
     def remove_cardlist(self, cardlist, log=True, comment=''):
         for card in cardlist:
-            self.cards.sub(card['name'], card['set'], card['count'])
+            self.cards.sub(card['name'], card['set_code'], card['collector_number'], card['count'])
         if log:
             self.log_cards(cardlist, 'removed - ' + comment)
 
@@ -66,4 +66,4 @@ class CardCollection:
             self.log_cards(self.cards, f'restored - {backup}')
             self.cards = CardList(self.path)
         else:
-            print(f'ERROR: No backup found named {backup}')
+            print(f'ERROR: No backup found named {backup}.')

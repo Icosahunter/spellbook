@@ -30,20 +30,26 @@ class CardList(list):
         if not line.startswith('//') and not line.startswith('#'):
             count = 1
             set_code = None
+            collector_num = None
             name = None
-            split_line = line.split()
-            if split_line[0].isdigit():
-                count = int(split_line[0])
-                split_line = split_line[1:]
-            set_codes = [x for x in split_line if x.startswith('[') and x.endswith(']')]
-            if len(set_codes) > 0:
-                set_code = set_codes[0][1:-1]
-                split_line.remove(set_codes[0])
-            name = ' '.join(split_line)
+
+            if line.split()[0].isdigit():
+                count = int(line.split()[0])
+                line = ' '.join(line.split()[1:])
+
+            lb = min(line.find('['), line.find('('))
+            if lb > -1:
+                set_code = line[lb:].split()[0].lstrip('[(')
+                collector_num = line[lb:].split()[1].rstrip('])')
+                name = line[0:lb].strip()
+            else:
+                name = line.strip()
+
             self.append(
                 {
                     'name': name,
-                    'set': set_code,
+                    'set_code': set_code,
+                    'collector_number': collector_num,
                     'count': count
                 }
             )
@@ -55,7 +61,18 @@ class CardList(list):
     def dumps(self):
         text = ''
         for card in self:
-            text += str(card['count']) + ' ' + card['name'] + (' ' + card['set'] if card['set'] else '') + '\n'
+
+            collector_info = ''
+
+            if card['set_code'] or card['collector_number']:
+                collector_info += ' ['
+                collector_info += card['set_code'] if card['set_code'] else ''
+                collector_info += ' ' if card['set_code'] and card['collector_number'] else ''
+                collector_info += card['collector_number'] if card['set_code'] else ''
+                collector_info += ']'
+
+            text += str(card['count']) + ' ' + card['name'] + collector_info + '\n'
+
         return text
 
     def cleanup(self):
@@ -70,7 +87,8 @@ class CardList(list):
             if resolved_card:
                 new_cards.append({
                     'name': resolved_card.name,
-                    'set': card['set'],
+                    'set_code': card['set_code'],
+                    'collector_number': card['collector_number'],
                     'count': card['count']
                 })
 
@@ -81,32 +99,37 @@ class CardList(list):
         new_cards = []
         done = []
         for card in self:
-            if (card['name'], card['set']) not in done:
-                dups = [x for x in self if x['name'] == card['name'] and x['set'] == card['set']]
+            if (card['name'], card['set_code']) not in done:
+                dups = [x for x in self if x['name'] == card['name'] and x['set_code'] == card['set_code']]
                 new_cards.append({
                         'name': card['name'],
-                        'set': card['set'],
+                        'set_code': card['set_code'],
                         'count': sum([x['count'] for x in dups])
                     })
-                done.append((card['name'], card['set']))
+                done.append((card['name'], card['set_code']))
         self.clear()
         self.extend(new_cards)
 
-    def search(self, name, set:None|str='*'):
+    def search(self, name:str, set_code:None|str='*', collector_number:None|str='*', threshold:float=0.6):
         results = [x for x in self if name.lower() in x['name'].lower()]
-        if set != '*':
-            results = [x for x in results if x['set'] == set]
+        if len(results) < 5:
+            results.extend([x for x in self if x not in results and fuzzy_compare(name, x['name']) > threshold][0:(5-len(results))])
+        if set_code != '*':
+            results = [x for x in results if x['set_code'] == set_code]
+        if collector_number != '*':
+            results = [x for x in results if x['collector_number'] == collector_number]
+        results.sort(key=lambda x: fuzzy_compare(x['name'], name), reverse=True)
         return CardList.from_list(results)
 
-    def add(self, name, set:str|None=None, count=1):
-        results = self.search(name, set)
+    def add(self, name:str, set_code:str|None=None, collector_number:str|None=None, count=1):
+        results = self.search(name, set_code, collector_number)
         if results:
             results[0]['count'] += count
         else:
-            self.append({'name': name, 'set': set, 'count': count})
+            self.append({'name': name, 'set_code': set_code, 'collector_number': collector_number, 'count': count})
 
-    def sub(self, name, set:str|None=None, count=1):
-        results = self.search(name, set)
+    def sub(self, name:str, set_code:str|None=None, collector_number:str|None=None, count=1):
+        results = self.search(name, set_code, collector_number)
         remaining = count
         if results:
             for result in results:

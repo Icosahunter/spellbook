@@ -47,7 +47,6 @@ def get_card(name):
         print(f'Could not find any cards matching "{name}"')
     return None
 
-
 def card_filter(query, threshold = 0.7):
     def _card_filter(card):
         if card.layout in ['token', 'art_series', 'double_faced_token', 'emblem']:
@@ -61,4 +60,4 @@ def card_filter(query, threshold = 0.7):
     return _card_filter
 
 def fuzzy_compare(str1, str2):
-    return SequenceMatcher(None, str1, str2).ratio()
+    return SequenceMatcher(None, str1.lower(), str2.lower()).ratio()
