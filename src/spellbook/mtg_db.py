@@ -3,6 +3,8 @@ from spellbook.directories import db_file
 import os
 import time
 import warnings
+import textwrap
+from itertools import chain
 with warnings.catch_warnings():
     warnings.simplefilter('ignore', UserWarning)
     import mtgtools.MtgDB
@@ -61,3 +63,28 @@ def card_filter(query, threshold = 0.7):
 
 def fuzzy_compare(str1, str2):
     return SequenceMatcher(None, str1.lower(), str2.lower()).ratio()
+
+def ascii_card(card):
+    title = card.name
+    mana = card.mana_cost
+    type = card.type_line
+    text = chain.from_iterable([[*textwrap.wrap(x, width=30), ''] for x in card.oracle_text.split('\n')])
+    text = list(text)[0:-1]
+    text = '\n'.join([f'│ {x:<30} │' for x in text])
+    pt = ''
+    if card.power:
+         pt = '[' + card.power + '/' + card.toughness + ']'
+    return f'╭────────────────────────────────╮\n' +\
+           f'│ {title:<20}{mana:>10} │\n' +\
+           f'├────────────────────────────────┤\n' +\
+           f'│ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │\n' +\
+           f'│ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │\n' +\
+           f'│ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │\n' +\
+           f'│ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │\n' +\
+           f'│ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │\n' +\
+           f'├────────────────────────────────┤\n' +\
+           f'│ {type:<30} │\n' +\
+           f'├────────────────────────────────┤\n' +\
+           text + '\n' +\
+           (f'│ {pt:>30} │\n' if pt else '') +\
+           f'╰────────────────────────────────╯'

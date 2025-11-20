@@ -89,5 +89,9 @@ def remove(name: str, collection: str='default'):
             col.remove_card(card.name, comment=Path(name).stem)
     col.save()
 
+@app.command()
+def show(name: str):
+    print(ascii_card(get_card(name)))
+
 if __name__ == "__main__":
     app()
