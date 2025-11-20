@@ -1,4 +1,5 @@
 [ ] Change the way that backups work. There should always be a backup file of the *current* state in backups as well, currently there is not.
-[ ] Add support for collector numbers.
+[X] Add support for collector numbers.
 [ ] Test set and collector number parsing and searching.
 [ ] Add unit tests.
+[ ] Fix functions outside of main.py printing/getting input. This should all be in main, or at least bypassable, so this can be used programmatically as a module.
