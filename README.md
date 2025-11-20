@@ -1,4 +1,8 @@
-# Spellbook
+<div align="center">
+    <img src="logo.svg" width="150">
+    <h1> Spellbook </h1>
+</div>
+
 A command-line Magic the Gathering collection manager tool.
 
 > [!NOTE]
