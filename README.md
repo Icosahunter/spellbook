@@ -25,3 +25,5 @@ To install without Just:
 # How to Use
 
 You can show all the commands with `spellbook --help`.
+
+See [DOCS.md](DOCS.md) for generated documentation on all the commands.

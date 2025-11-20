@@ -12,3 +12,6 @@ build: setup
 
 install: build
     python3 -m pip install --force-reinstall ./dist/*.whl
+
+build-docs:
+    typer spellbook.main utils docs --output DOCS.md --name "spellbook"
