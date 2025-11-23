@@ -1,0 +1,21 @@
+lines: (_line | _WS "\n" | "\n")+
+_line: _WS? (card | category | comment) _WS? "\n"
+comment.2: "/*" /[^\/\*\#\\]+/ "*/"
+       | "#" /[^\/\*\#\\\n]+/
+       | "//" /[^\/\*\#\\\n]+/
+category.1: category_name _WS? comment?
+category_name: "mainboard"i  -> mainboard
+             | "maybeboard"i -> maybeboard
+             | "sideboard"i  -> sideboard
+             | "commander"i  -> commander
+card: (count _WS)? name _WS? col_info? _WS? comment?
+name: /[^\[\]\(\)\/\*\#\\\n]+/
+count: _int "x"?
+col_info: "[" set _WS col_num? "]"
+        | "(" set _WS col_num? ")"
+        | "[" set "]" col_num?
+        | "(" set ")" col_num?
+col_num: _int
+set: /\w+/
+_WS: /[ \t]+/
+_int: /[0-9]+/
